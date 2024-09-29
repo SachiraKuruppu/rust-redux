@@ -1,5 +1,6 @@
 mod context;
 mod store;
+mod selector;
 
 use context::Context;
 use store::{Action, MyReducer, Store};
@@ -15,14 +16,19 @@ fn main() {
         }
     );
 
-    cx.use_selector(
-        |store| {
-            store.count
-        },
-        Box::new(move |value| {
-            println!("New value {:?}",  value)
-        }),
-    );
+    (|| {
+        let mut v = 0;
+        cx.use_selector(
+            |store| {
+                store.count
+            },
+            Box::new(move |value| {
+                v += 10;
+                println!("{}", v);
+                println!("New value {:?}",  value)
+            }),
+        );
+    })();
 
     cx.dispatch(&Action::Increment);
     cx.dispatch(&Action::SetFirstName(String::from("Bob")));

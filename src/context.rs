@@ -1,48 +1,13 @@
 use std::{any::Any, boxed::Box};
 use std::marker::PhantomData;
-use rust_redux::Reducer;
+use rust_redux::{Reducer, Selector};
+
+use crate::selector::SelectorImpl;
 
 
-pub trait Selector<S> {
-    fn select(&self, store: &S) -> Box<dyn Any>;
-    fn callback(&mut self, data: Box<dyn Any>);
-}
-
-struct SelectorImpl<S,T> {
-    selector: Box<dyn Fn(&S) -> T>,
-    callback: Box<dyn FnMut(Box<T>)>,
-}
-
-impl<S,T> SelectorImpl<S,T>{
-    fn new<F,G>(selector: F, callback: G) -> Self
-    where
-        F: Fn(&S) -> T + 'static,
-        G: FnMut(Box<T>) + 'static,
-    {
-        SelectorImpl {
-            selector: Box::new(selector),
-            callback: Box::new(callback),
-        }
-    }
-}
-
-impl<S,T: 'static> Selector<S> for SelectorImpl<S,T> {
-
-    fn select(&self, store: &S) -> Box<dyn Any> {
-        let current_value = (self.selector)(store);
-        Box::new(current_value)
-    }
-
-    fn callback(&mut self, data: Box<dyn Any>) {
-        if let Ok(downcasted_box) = data.downcast::<T>() {
-            (self.callback)(downcasted_box)
-        }
-    }
-}
-
-pub struct Context<S, A, R>
+pub struct Context<S,A,R>
 where
-    R: Reducer<S, A>,
+    R: Reducer<S,A>,
 {
     pub store: Box<S>,
     _reducer: R,
@@ -51,9 +16,9 @@ where
     selectors: Vec<Box<dyn Selector<S>>>,
 }
 
-impl<S: 'static, A, R> Context<S, A, R>
+impl<S: 'static,A,R> Context<S,A,R>
 where
-    R: Reducer<S, A>,
+    R: Reducer<S,A>,
 {
     pub fn new(reducer: R, initial_state: S) -> Self {
         Context {
@@ -61,7 +26,6 @@ where
             _reducer: reducer,
             _phantom: PhantomData,
 
-            // subscribers: HashMap<u64, Subscriber<S,T>>::new(),
             selectors: Vec::new(),
         }
     }
@@ -72,9 +36,9 @@ where
     }
 }
 
-impl<S: 'static, A, R> Context<S, A, R>
+impl<S: 'static,A,R> Context<S,A,R>
 where
-    R: Reducer<S, A>,
+    R: Reducer<S,A>,
 {
     pub fn use_selector<F,G,T>(&mut self, selector: F, callback: G)
     where

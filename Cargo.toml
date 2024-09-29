@@ -2,6 +2,3 @@
 name = "rust-redux"
 version = "0.1.0"
 edition = "2021"
-
-[dependencies]
-anymap = "0.12.1"
