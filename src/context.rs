@@ -1,7 +1,7 @@
 use std::{any::Any, boxed::Box};
 use std::marker::PhantomData;
-use rust_redux::{Reducer, Selector};
 
+use crate::{Reducer, Selector};
 use crate::selector::SelectorImpl;
 
 

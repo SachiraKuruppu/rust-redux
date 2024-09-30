@@ -1,5 +1,5 @@
 use std::any::Any;
-use rust_redux::Selector;
+use crate::Selector;
 
 pub struct SelectorImpl<S,T> {
     selector: Box<dyn Fn(&S) -> T>,
